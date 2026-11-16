@@ -1,4 +1,3 @@
-<link rel="manifest" href="manifest.json">
 <!DOCTYPE html>
 <html lang="sr">
 <head>
@@ -9,6 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Marko Finansije" />
+  <link rel="manifest" href="manifest.json" />
   <title>MARKO // Finansijski & Dugovni Komandni Centar</title>
   <style>
     :root {
@@ -79,19 +79,19 @@
       </div>
       <div class="clock-box">
         <div class="clock" id="clock">00:00:00</div>
-        <div class="sub" id="countdown">Alarm spreman</div>
+        <div class="sub" id="storageStatus">🟢 Memorija aktivna</div>
       </div>
     </div>
 
     <div class="alarm-bar">
       <span style="font-size:0.82rem;font-weight:700;">⏰ Alarm:</span>
       <input type="time" id="alarmTime" value="08:00" />
-      <button class="btn btn-ghost btn-sm" onclick="setQuickAlarm('07:00')">07:00</button>
-      <button class="btn btn-ghost btn-sm" onclick="setQuickAlarm('08:00')">08:00</button>
-      <button class="btn btn-ghost btn-sm" onclick="setQuickAlarm('09:30')">09:30</button>
-      <button class="btn btn-sm" onclick="saveAlarm()">Sačuvaj</button>
-      <button class="btn btn-green btn-sm" onclick="testAlarm()">🔔 Test</button>
-      <button class="btn btn-blue btn-sm" onclick="exportBackup()">💾 Bekap</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="setQuickAlarm('07:00')">07:00</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="setQuickAlarm('08:00')">08:00</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="setQuickAlarm('09:30')">09:30</button>
+      <button type="button" class="btn btn-sm" onclick="saveAlarm()">Sačuvaj</button>
+      <button type="button" class="btn btn-green btn-sm" onclick="testAlarm()">🔔 Test</button>
+      <button type="button" class="btn btn-blue btn-sm" onclick="exportBackup()">💾 Bekap</button>
       <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
         📂 Učitaj
         <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importBackup(event)" />
@@ -110,7 +110,7 @@
         <div class="cash-big" style="color:var(--gold)" id="startCashDisplay">0,00 RSD</div>
         <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
           <input type="number" id="startCashInput" placeholder="Unesi početno (RSD)" style="flex:1;min-width:130px;" />
-          <button class="btn" onclick="setStartCash()">Sačuvaj</button>
+          <button type="button" class="btn" onclick="setStartCash()">Sačuvaj</button>
         </div>
         <div class="meta">Keš u novčaniku + raspoloživo na računu na početku dana.</div>
       </div>
@@ -120,7 +120,7 @@
         <div class="cash-big" style="color:var(--emerald)" id="endCashDisplay">0,00 RSD</div>
         <div class="meta" id="dailyBreakdown">Danas: +0 RSD prihoda | -0 RSD odliva (Neto: 0 RSD)</div>
         <div class="actions">
-          <button class="btn btn-blue" onclick="closeDay()">🌙 Završi dan & prenesi za sutra</button>
+          <button type="button" class="btn btn-blue" onclick="closeDay()">🌙 Završi dan & prenesi za sutra</button>
         </div>
       </div>
     </div>
@@ -176,27 +176,24 @@
       </select>
       <input type="text" id="txDesc" placeholder="Opis (npr. Uplata Coe 3.000, Montaža TV-a, Gorivo)" style="flex:1;min-width:180px;" />
       <input type="number" id="txAmt" placeholder="Iznos RSD" style="width:120px;" />
-      <button class="btn btn-green" onclick="addTx()">Dodaj</button>
+      <button type="button" class="btn btn-green" onclick="addTx()">Dodaj</button>
     </div>
     <div id="txLog" style="margin-top:10px;"></div>
   </div>
 
   <div class="section">
     <div class="sec-title"><span>🧠 Looping Sistem — Pametni sledeći potez</span></div>
-    <div class="meta" id="aiAdvice" style="color:var(--text);margin-bottom:10px;">
-      1. Pozovi Creditexpress (011/442-18-22) za predmet 10383328 i pošalji zahtev za 4 rate na naplata@creditexpress.rs.<br>
-      2. Od sutra (17.11.2026) kreće otplata duga Coe (Jelena Galić) po 3.000 RSD — račun primaoca: 115-0381638574517-67.<br>
-      3. Uplati 1.200 RSD na Yettel Bank tekući račun da odmah prekineš zateznu kamatu od 26–32%.<br>
-      4. Obnovi KP oglas „HAUSMAJSTOR – Sve kućne popravke” (ističe 25.11.2026) da pokreneš priliv keša ove nedelje.
-    </div>
     <div id="loopHistory" style="margin-bottom:10px;"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <input type="text" id="loopNote" placeholder="Upiši šta si danas završio ili koliko si zaradio..." style="flex:1;min-width:200px;" />
-      <button class="btn" onclick="recordLoop()">Ažuriraj strategiju</button>
+      <button type="button" class="btn" onclick="recordLoop()">Ažuriraj strategiju</button>
     </div>
   </div>
 
   <script>
+    const STORAGE_KEY = 'marko_cc_master';
+    const LEGACY_KEYS = ['marko_cc_v6', 'marko_cc_v5', 'marko_cc_v4', 'marko_cc_v3', 'marko_cc_v2'];
+
     const defaultDebts = [
       { id: 'ce', name: 'DOO Creditexpress (Yettel d.o.o.) — Predmet 10383328', amount: 67307.70, paid: 0, rate: 18, badge: 'HITNO — PRED SUDSKI POSTUPAK', bClass: 'b-crit', details: 'Račun: 265-1040310000502-07 | Poziv na broj: 43-26720331-2608 | Tel: 011/442-18-22', email: 'naplata@creditexpress.rs' },
       { id: 'coe', name: 'Coe (Jelena Galić) — Otplata po 3.000 RSD (od 17.11.2026.)', amount: 3000.00, paid: 0, rate: 15, badge: 'OD SUTRA • 3.000 RSD / RATA', bClass: 'b-pers', details: 'Početak: Sutra, 17.11.2026. po 3.000 RSD | Račun: 115-0381638574517-67 (klikni Izmeni ukupno ako ima više rata).', email: '' },
@@ -206,48 +203,81 @@
     ];
 
     const todayStr = new Date().toLocaleDateString('sr-RS');
+    let storageOk = true;
 
-    let state = JSON.parse(localStorage.getItem('marko_cc_v6') || 'null');
-    if (!state) {
-      const old = JSON.parse(localStorage.getItem('marko_cc_v5') || localStorage.getItem('marko_cc_v4') || localStorage.getItem('marko_cc_v3') || 'null');
-      if (old) {
-        if (!old.debts.find(d => d.id === 'coe')) {
-          old.debts.splice(1, 0, defaultDebts.find(d => d.id === 'coe'));
+    function safeReadStorage() {
+      try {
+        const direct = localStorage.getItem(STORAGE_KEY);
+        if (direct) return JSON.parse(direct);
+        for (const k of LEGACY_KEYS) {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.debts)) return parsed;
+          }
         }
-        state = {
-          debts: old.debts,
-          txs: old.txs || [],
-          alarm: old.alarm || '08:00',
-          loops: old.loops || [],
-          startCash: old.startCash || 0,
-          cashDate: old.cashDate || todayStr,
-          dayHistory: old.dayHistory || []
-        };
-      } else {
-        state = {
-          debts: defaultDebts,
-          txs: [],
-          alarm: '08:00',
-          loops: [],
-          startCash: 0,
-          cashDate: todayStr,
-          dayHistory: []
-        };
+      } catch (e) {
+        storageOk = false;
       }
-      localStorage.setItem('marko_cc_v6', JSON.stringify(state));
+      try {
+        if (window.name && window.name.startsWith('{')) {
+          return JSON.parse(window.name);
+        }
+      } catch (e) {}
+      return null;
     }
 
-    function save() { localStorage.setItem('marko_cc_v6', JSON.stringify(state)); }
+    function safeWriteStorage(data) {
+      const serialized = JSON.stringify(data);
+      try {
+        localStorage.setItem(STORAGE_KEY, serialized);
+        localStorage.setItem('marko_cc_v5', serialized);
+        localStorage.setItem('marko_cc_v6', serialized);
+        storageOk = true;
+      } catch (e) {
+        storageOk = false;
+      }
+      try {
+        window.name = serialized;
+      } catch (e) {}
+      const statusEl = document.getElementById('storageStatus');
+      if (statusEl) {
+        statusEl.textContent = storageOk ? '🟢 Memorija aktivna' : '⚠️ Privremena memorija (koristi Bekap)';
+      }
+    }
+
+    let loaded = safeReadStorage();
+    let state = {
+      debts: (loaded && Array.isArray(loaded.debts)) ? loaded.debts : JSON.parse(JSON.stringify(defaultDebts)),
+      txs: (loaded && Array.isArray(loaded.txs)) ? loaded.txs : [],
+      alarm: (loaded && loaded.alarm) ? loaded.alarm : '08:00',
+      loops: (loaded && Array.isArray(loaded.loops)) ? loaded.loops : [],
+      startCash: (loaded && !isNaN(Number(loaded.startCash))) ? Number(loaded.startCash) : 0,
+      cashDate: (loaded && loaded.cashDate) ? loaded.cashDate : todayStr,
+      dayHistory: (loaded && Array.isArray(loaded.dayHistory)) ? loaded.dayHistory : []
+    };
+
+    if (!state.debts.find(d => d.id === 'coe')) {
+      state.debts.splice(1, 0, JSON.parse(JSON.stringify(defaultDebts[1])));
+    }
+
+    function save() {
+      safeWriteStorage(state);
+    }
+
     function toast(msg) {
       const t = document.getElementById('toast');
-      t.textContent = msg; t.style.display = 'block';
-      setTimeout(() => t.style.display = 'none', 2800);
+      if (!t) return;
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2800);
     }
 
     function getTodayStats() {
       const todayTxs = state.txs.filter(t => t.date === todayStr);
-      const inToday = todayTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amt, 0);
-      const outToday = todayTxs.filter(t => t.type !== 'income').reduce((s, t) => s + t.amt, 0);
+      const inToday = todayTxs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amt || 0), 0);
+      const outToday = todayTxs.filter(t => t.type !== 'income').reduce((s, t) => s + Number(t.amt || 0), 0);
       const start = Number(state.startCash) || 0;
       const end = start + inToday - outToday;
       return { start, inToday, outToday, end, diff: inToday - outToday };
@@ -269,8 +299,8 @@
         histEl.innerHTML = '<div class="meta" style="margin-bottom:4px;font-weight:700;">Arhiva prethodnih dana:</div>' +
           state.dayHistory.slice(0, 5).map(h => `
             <div class="log-row">
-              <span>${h.date} (Početak: ${h.start.toLocaleString('sr-RS')} RSD)</span>
-              <strong style="color:var(--emerald)">Kraj: ${h.end.toLocaleString('sr-RS')} RSD</strong>
+              <span>${h.date} (Početak: ${Number(h.start).toLocaleString('sr-RS')} RSD)</span>
+              <strong style="color:var(--emerald)">Kraj: ${Number(h.end).toLocaleString('sr-RS')} RSD</strong>
             </div>`).join('');
       } else {
         histEl.innerHTML = '';
@@ -278,13 +308,15 @@
     }
 
     function setStartCash() {
-      const val = parseFloat(document.getElementById('startCashInput').value);
+      const raw = document.getElementById('startCashInput').value.replace(',', '.');
+      const val = parseFloat(raw);
       if (isNaN(val)) return toast('Unesi početno stanje u RSD');
       state.startCash = val;
       state.cashDate = todayStr;
       document.getElementById('startCashInput').value = '';
-      save(); renderCash();
-      toast('Početno stanje sačuvano: ' + val.toLocaleString('sr-RS') + ' RSD');
+      save();
+      renderCash();
+      toast('✅ Početno stanje sačuvano: ' + val.toLocaleString('sr-RS') + ' RSD');
     }
 
     function closeDay() {
@@ -292,8 +324,9 @@
       state.dayHistory = state.dayHistory || [];
       state.dayHistory.unshift({ date: todayStr, start: st.start, end: st.end });
       state.startCash = st.end;
-      save(); renderCash();
-      toast('Dan završen! Krajnje stanje (' + st.end.toLocaleString('sr-RS') + ' RSD) preneto kao novo početno.');
+      save();
+      renderCash();
+      toast('🌙 Dan završen! Krajnje stanje preneto kao novo početno.');
     }
 
     function renderDebts() {
@@ -304,7 +337,7 @@
 
       const el = document.getElementById('debtList');
       el.innerHTML = list.map(d => {
-        const rem = Math.max(0, d.amount - d.paid);
+        const rem = Math.max(0, Number(d.amount) - Number(d.paid));
         const mailHref = d.email ? `mailto:${d.email}?subject=${encodeURIComponent('Predlog sporazuma o otplati duga na rate - Predmet 10383328 (Marko Stakić)')}&body=${encodeURIComponent('Poštovani,\n\nObraćam Vam se povodom opomene za predmet broj 10383328 (nalogodavac: Yettel d.o.o., iznos: 67.307,70 RSD). Molim Vas za odobrenje sporazuma o otplati duga na 4 mesečne rate.\n\nKontakt telefon: 060/1612306\n\nSrdačan pozdrav,\nMarko Stakić')}` : '';
         return `
           <div class="debt-item">
@@ -321,10 +354,10 @@
               </div>
               <div class="actions">
                 ${d.id === 'ce' ? `<a class="btn btn-red" href="tel:0114421822">📞 011/442-18-22</a><a class="btn" href="${mailHref}">✉ Mejl za rate</a>` : ''}
-                ${d.id === 'coe' ? `<button class="btn btn-purple" onclick="editCoeTotal()">✏️ Izmeni ukupno</button>` : ''}
-                ${d.id === 'coe' && rem > 0 ? `<button class="btn btn-green" onclick="payDebt('coe', 3000)">-3.000 RSD (Rata)</button>` : ''}
-                ${rem > 0 && d.id !== 'coe' ? `<button class="btn btn-green" onclick="payDebt('${d.id}', 1000)">-1.000 RSD</button>` : ''}
-                ${rem > 0 ? `<button class="btn btn-ghost" onclick="payDebt('${d.id}', ${rem})">Zatvori sve</button>` : ''}
+                ${d.id === 'coe' ? `<button type="button" class="btn btn-purple" onclick="editCoeTotal()">✏️ Izmeni ukupno</button>` : ''}
+                ${d.id === 'coe' && rem > 0 ? `<button type="button" class="btn btn-green" onclick="payDebt('coe', 3000)">-3.000 RSD (Rata)</button>` : ''}
+                ${rem > 0 && d.id !== 'coe' ? `<button type="button" class="btn btn-green" onclick="payDebt('${d.id}', 1000)">-1.000 RSD</button>` : ''}
+                ${rem > 0 ? `<button type="button" class="btn btn-ghost" onclick="payDebt('${d.id}', ${rem})">Zatvori sve</button>` : ''}
               </div>
             </div>
           </div>`;
@@ -335,4 +368,201 @@
     function editCoeTotal() {
       const d = state.debts.find(x => x.id === 'coe');
       if (!d) return;
-      const val = prompt('Unesi ukupan iznos duga prema Coe u RSD 
+      const val = prompt('Unesi ukupan iznos duga prema Coe u RSD (npr. 15000 za 5 rata po 3.000 RSD):', d.amount);
+      if (val !== null) {
+        const parsed = parseFloat(val.replace(',', '.'));
+        if (!isNaN(parsed) && parsed > 0) {
+          d.amount = parsed;
+          save(); renderDebts(); updateSim();
+          toast('✅ Ukupan dug za Coe ažuriran na ' + d.amount.toLocaleString('sr-RS') + ' RSD');
+        }
+      }
+    }
+
+    function payDebt(id, amt) {
+      const d = state.debts.find(x => x.id === id);
+      if (!d) return;
+      const actual = Math.min(Number(d.amount) - Number(d.paid), Number(amt));
+      if (actual <= 0) return;
+      d.paid = Number(d.paid) + actual;
+      state.txs.unshift({ type: 'debt', debtId: id, desc: 'Uplata: ' + d.name.split('—')[0].trim(), amt: actual, date: todayStr });
+      save(); renderDebts(); renderTxs(); renderCash(); updateSim();
+      toast('✅ Uplata evidentirana: ' + actual.toLocaleString('sr-RS') + ' RSD');
+    }
+
+    function addTx() {
+      const type = document.getElementById('txType').value;
+      const desc = document.getElementById('txDesc').value.trim() || (type === 'income' ? 'Dodatni prihod' : (type === 'debt' ? 'Uplata duga' : 'Dnevni trošak'));
+      const rawAmt = document.getElementById('txAmt').value.replace(',', '.');
+      const amt = parseFloat(rawAmt);
+      if (isNaN(amt) || amt <= 0) return toast('Unesi ispravan iznos u RSD');
+      state.txs.unshift({ type, desc, amt, date: todayStr });
+      document.getElementById('txDesc').value = '';
+      document.getElementById('txAmt').value = '';
+      save(); renderTxs(); renderCash(); updateKPIs();
+      toast('✅ Sačuvano u dnevnik!');
+    }
+
+    function deleteTx(idx) {
+      const t = state.txs[idx];
+      if (!t) return;
+      if (t.debtId) {
+        const d = state.debts.find(x => x.id === t.debtId);
+        if (d) d.paid = Math.max(0, Number(d.paid) - Number(t.amt));
+      }
+      state.txs.splice(idx, 1);
+      save(); renderDebts(); renderTxs(); renderCash(); updateSim();
+      toast('Stavka obrisana.');
+    }
+
+    function renderTxs() {
+      const el = document.getElementById('txLog');
+      el.innerHTML = state.txs.slice(0, 12).map((t, idx) => {
+        const color = t.type === 'income' ? 'var(--emerald)' : (t.type === 'debt' ? 'var(--gold)' : 'var(--red)');
+        const sign = t.type === 'income' ? '+' : '-';
+        return `
+        <div class="log-row">
+          <span>${t.date} • ${t.desc}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <strong style="color:${color}">${sign}${Number(t.amt).toLocaleString('sr-RS')} RSD</strong>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="deleteTx(${idx})" title="Obriši">✕</button>
+          </div>
+        </div>`;
+      }).join('') || '<div class="meta">Još nema unetih transakcija danas.</div>';
+    }
+
+    function updateKPIs() {
+      const total = state.debts.reduce((s, d) => s + Number(d.amount || 0), 0);
+      const paid = state.debts.reduce((s, d) => s + Number(d.paid || 0), 0);
+      const rem = Math.max(0, total - paid);
+      const inc = state.txs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amt || 0), 0);
+      document.getElementById('kpiDebt').textContent = Math.round(rem).toLocaleString('sr-RS') + ' RSD';
+      document.getElementById('kpiPaid').textContent = Math.round(paid).toLocaleString('sr-RS') + ' RSD';
+      document.getElementById('kpiIncome').textContent = Math.round(inc).toLocaleString('sr-RS') + ' RSD';
+      const pct = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
+      document.getElementById('debtBar').style.width = pct.toFixed(1) + '%';
+    }
+
+    function updateSim() {
+      const w = parseInt(document.getElementById('weeklySlider').value, 10);
+      document.getElementById('weeklyVal').textContent = w.toLocaleString('sr-RS') + ' RSD';
+      const total = state.debts.reduce((s, d) => s + Number(d.amount || 0), 0);
+      const paid = state.debts.reduce((s, d) => s + Number(d.paid || 0), 0);
+      const rem = Math.max(0, total - paid);
+      const wks = rem === 0 ? 0 : Math.ceil(rem / w);
+      document.getElementById('kpiWeeks').textContent = wks === 0 ? '0 ned.' : `~${wks} ned.`;
+      document.getElementById('simResult').textContent = wks === 0
+        ? 'Svi dugovi su zatvoreni! Svaki sledeći dinar ide direktno u štednju.'
+        : `Sa ${w.toLocaleString('sr-RS')} RSD nedeljno zatvaraš preostalih ${Math.round(rem).toLocaleString('sr-RS')} RSD za ${wks} nedelja.`;
+    }
+
+    function recordLoop() {
+      const input = document.getElementById('loopNote');
+      const note = input.value.trim();
+      if (!note) return toast('Upiši belešku pre čuvanja');
+      state.loops = Array.isArray(state.loops) ? state.loops : [];
+      state.loops.unshift({ note, time: new Date().toLocaleString('sr-RS') });
+      input.value = '';
+      save();
+      renderLoops();
+      toast('✅ Strategija uspešno sačuvana!');
+    }
+
+    function deleteLoop(idx) {
+      state.loops.splice(idx, 1);
+      save();
+      renderLoops();
+      toast('Beleška obrisana.');
+    }
+
+    function renderLoops() {
+      const el = document.getElementById('loopHistory');
+      state.loops = Array.isArray(state.loops) ? state.loops : [];
+      const defaultHtml = `
+        <div class="meta" style="color:var(--text);margin-bottom:8px;">
+          1. Pozovi Creditexpress (011/442-18-22) za predmet 10383328 i pošalji zahtev za 4 rate na naplata@creditexpress.rs.<br>
+          2. Od sutra (17.11.2026) kreće otplata duga Coe (Jelena Galić) po 3.000 RSD — račun: 115-0381638574517-67.<br>
+          3. Uplati 1.200 RSD na Yettel Bank tekući račun da prekineš kamatu od 26–32%.<br>
+          4. Obnovi KP oglas „HAUSMAJSTOR – Sve kućne popravke” (ističe 25.11.2026).
+        </div>`;
+      if (state.loops.length === 0) {
+        el.innerHTML = defaultHtml;
+        return;
+      }
+      el.innerHTML = defaultHtml + state.loops.slice(0, 10).map((l, idx) => `
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:0.84rem;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span><strong style="color:var(--emerald);">✔ ${l.time}</strong>: ${l.note}</span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="deleteLoop(${idx})">✕</button>
+        </div>`).join('');
+    }
+
+    function exportBackup() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Marko_Finansije_Bekap_' + todayStr.replace(/\./g, '-') + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('💾 Bekap fajl preuzet!');
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && Array.isArray(parsed.debts)) {
+            state = parsed;
+            save(); renderCash(); renderDebts(); renderTxs(); renderLoops(); updateSim();
+            toast('✅ Podaci uspešno učitani iz bekapa!');
+          } else {
+            toast('Neispravan bekap fajl.');
+          }
+        } catch(err) {
+          toast('Greška pri učitavanju fajla.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function setQuickAlarm(val) {
+      document.getElementById('alarmTime').value = val;
+      saveAlarm();
+    }
+    function saveAlarm() {
+      state.alarm = document.getElementById('alarmTime').value;
+      save();
+      toast('⏰ Alarm podešen na ' + state.alarm);
+    }
+    function testAlarm() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.35);
+      } catch(e) {}
+      toast('🔔 Jutarnji brifing spreman!');
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      const clockEl = document.getElementById('clock');
+      if (clockEl) clockEl.textContent = now.toTimeString().slice(0,8);
+    }, 1000);
+
+    document.getElementById('alarmTime').value = state.alarm || '08:00';
+    save();
+    renderCash();
+    renderDebts();
+    renderTxs();
+    renderLoops();
+    updateSim();
+  </script>
+</body>
+</html>
