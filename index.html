@@ -99,7 +99,6 @@
     </div>
   </div>
 
-  <!-- DNEVNI BILANS NOVCA: POČETAK I KRAJ DANA -->
   <div class="section" style="border-color: rgba(16,185,129,0.45);">
     <div class="sec-title">
       <span>💵 Dnevno stanje novca (Početak & Kraj dana)</span>
@@ -190,6 +189,7 @@
       3. Uplati 1.200 RSD na Yettel Bank tekući račun da odmah prekineš zateznu kamatu od 26–32%.<br>
       4. Obnovi KP oglas „HAUSMAJSTOR – Sve kućne popravke” (ističe 25.11.2026) da pokreneš priliv keša ove nedelje.
     </div>
+    <div id="loopHistory" style="margin-bottom:10px;"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <input type="text" id="loopNote" placeholder="Upiši šta si danas završio ili koliko si zaradio..." style="flex:1;min-width:200px;" />
       <button class="btn" onclick="recordLoop()">Ažuriraj strategiju</button>
@@ -207,9 +207,9 @@
 
     const todayStr = new Date().toLocaleDateString('sr-RS');
 
-    let state = JSON.parse(localStorage.getItem('marko_cc_v5') || 'null');
+    let state = JSON.parse(localStorage.getItem('marko_cc_v6') || 'null');
     if (!state) {
-      const old = JSON.parse(localStorage.getItem('marko_cc_v4') || localStorage.getItem('marko_cc_v3') || localStorage.getItem('marko_cc_v2') || 'null');
+      const old = JSON.parse(localStorage.getItem('marko_cc_v5') || localStorage.getItem('marko_cc_v4') || localStorage.getItem('marko_cc_v3') || 'null');
       if (old) {
         if (!old.debts.find(d => d.id === 'coe')) {
           old.debts.splice(1, 0, defaultDebts.find(d => d.id === 'coe'));
@@ -234,10 +234,10 @@
           dayHistory: []
         };
       }
-      localStorage.setItem('marko_cc_v5', JSON.stringify(state));
+      localStorage.setItem('marko_cc_v6', JSON.stringify(state));
     }
 
-    function save() { localStorage.setItem('marko_cc_v5', JSON.stringify(state)); }
+    function save() { localStorage.setItem('marko_cc_v6', JSON.stringify(state)); }
     function toast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg; t.style.display = 'block';
@@ -335,171 +335,4 @@
     function editCoeTotal() {
       const d = state.debts.find(x => x.id === 'coe');
       if (!d) return;
-      const val = prompt('Unesi ukupan iznos duga prema Coe u RSD (npr. 15000 za 5 rata po 3.000 RSD):', d.amount);
-      if (val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0) {
-        d.amount = parseFloat(val);
-        save(); renderDebts(); updateSim();
-        toast('Ukupan dug za Coe ažuriran na ' + d.amount.toLocaleString('sr-RS') + ' RSD');
-      }
-    }
-
-    function payDebt(id, amt) {
-      const d = state.debts.find(x => x.id === id);
-      if (!d) return;
-      const actual = Math.min(d.amount - d.paid, amt);
-      d.paid += actual;
-      state.txs.unshift({ type: 'debt', debtId: id, desc: 'Uplata: ' + d.name.split('—')[0].trim(), amt: actual, date: todayStr });
-      save(); renderDebts(); renderTxs(); renderCash(); updateSim();
-      toast('Uplata evidentirana: ' + actual.toLocaleString('sr-RS') + ' RSD');
-    }
-
-    function addTx() {
-      const type = document.getElementById('txType').value;
-      const desc = document.getElementById('txDesc').value.trim() || (type === 'income' ? 'Dodatni prihod' : (type === 'debt' ? 'Uplata duga' : 'Dnevni trošak'));
-      const amt = parseFloat(document.getElementById('txAmt').value);
-      if (!amt || amt <= 0) return toast('Unesi ispravan iznos');
-      state.txs.unshift({ type, desc, amt, date: todayStr });
-      document.getElementById('txDesc').value = '';
-      document.getElementById('txAmt').value = '';
-      save(); renderTxs(); renderCash(); updateKPIs();
-      toast('Sačuvano u dnevnik!');
-    }
-
-    function deleteTx(idx) {
-      const t = state.txs[idx];
-      if (!t) return;
-      if (t.debtId) {
-        const d = state.debts.find(x => x.id === t.debtId);
-        if (d) d.paid = Math.max(0, d.paid - t.amt);
-      }
-      state.txs.splice(idx, 1);
-      save(); renderDebts(); renderTxs(); renderCash(); updateSim();
-      toast('Stavka obrisana.');
-    }
-
-    function renderTxs() {
-      const el = document.getElementById('txLog');
-      el.innerHTML = state.txs.slice(0, 12).map((t, idx) => {
-        const color = t.type === 'income' ? 'var(--emerald)' : (t.type === 'debt' ? 'var(--gold)' : 'var(--red)');
-        const sign = t.type === 'income' ? '+' : '-';
-        return `
-        <div class="log-row">
-          <span>${t.date} • ${t.desc}</span>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <strong style="color:${color}">${sign}${t.amt.toLocaleString('sr-RS')} RSD</strong>
-            <button class="btn btn-ghost btn-sm" onclick="deleteTx(${idx})" title="Obriši">✕</button>
-          </div>
-        </div>`;
-      }).join('') || '<div class="meta">Još nema unetih transakcija danas.</div>';
-    }
-
-    function updateKPIs() {
-      const total = state.debts.reduce((s, d) => s + d.amount, 0);
-      const paid = state.debts.reduce((s, d) => s + d.paid, 0);
-      const rem = Math.max(0, total - paid);
-      const inc = state.txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amt, 0);
-      document.getElementById('kpiDebt').textContent = Math.round(rem).toLocaleString('sr-RS') + ' RSD';
-      document.getElementById('kpiPaid').textContent = Math.round(paid).toLocaleString('sr-RS') + ' RSD';
-      document.getElementById('kpiIncome').textContent = Math.round(inc).toLocaleString('sr-RS') + ' RSD';
-      const pct = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
-      document.getElementById('debtBar').style.width = pct.toFixed(1) + '%';
-    }
-
-    function updateSim() {
-      const w = parseInt(document.getElementById('weeklySlider').value, 10);
-      document.getElementById('weeklyVal').textContent = w.toLocaleString('sr-RS') + ' RSD';
-      const total = state.debts.reduce((s, d) => s + d.amount, 0);
-      const paid = state.debts.reduce((s, d) => s + d.paid, 0);
-      const rem = Math.max(0, total - paid);
-      const wks = rem === 0 ? 0 : Math.ceil(rem / w);
-      document.getElementById('kpiWeeks').textContent = wks === 0 ? '0 ned.' : `~${wks} ned.`;
-      document.getElementById('simResult').textContent = wks === 0
-        ? 'Svi dugovi su zatvoreni! Svaki sledeći dinar ide direktno u štednju.'
-        : `Sa ${w.toLocaleString('sr-RS')} RSD nedeljno zatvaraš preostalih ${Math.round(rem).toLocaleString('sr-RS')} RSD za ${wks} nedelja.`;
-    }
-
-    function recordLoop() {
-      const note = document.getElementById('loopNote').value.trim();
-      if (!note) return;
-      state.loops.unshift({ note, time: new Date().toLocaleString('sr-RS') });
-      document.getElementById('loopNote').value = '';
-      save();
-      document.getElementById('aiAdvice').innerHTML = `
-        ✅ <strong>Zabeleženo (${state.loops[0].time}):</strong> "${note}"<br><br>
-        <strong>Ažurirani prioritet:</strong><br>
-        • Prati dnevno stanje novca (početak → kraj dana) i svaku pozitivnu razliku usmeri na rate.<br>
-        • Od sutra (17.11.2026) drži ritam uplate od 3.000 RSD prema Coe (Jelena Galić).`;
-      toast('Looping sistem ažuriran!');
-    }
-
-    function exportBackup() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'Marko_Finansije_Bekap_' + todayStr.replace(/\./g, '-') + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('💾 Bekap fajl preuzet!');
-    }
-
-    function importBackup(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed && Array.isArray(parsed.debts)) {
-            state = parsed;
-            save(); renderCash(); renderDebts(); renderTxs(); updateSim();
-            toast('✅ Podaci uspešno učitani iz bekapa!');
-          } else {
-            toast('Neispravan bekap fajl.');
-          }
-        } catch(err) {
-          toast('Greška pri učitavanju fajla.');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function setQuickAlarm(val) {
-      document.getElementById('alarmTime').value = val;
-      saveAlarm();
-    }
-    function saveAlarm() {
-      state.alarm = document.getElementById('alarmTime').value;
-      save();
-      toast('Alarm podešen na ' + state.alarm);
-    }
-    function testAlarm() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.35);
-      } catch(e) {}
-      toast('🔔 Jutarnji brifing spreman!');
-    }
-
-    setInterval(() => {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toTimeString().slice(0,8);
-      const [ah, am] = (state.alarm || '08:00').split(':').map(Number);
-      const target = new Date(now); target.setHours(ah, am, 0, 0);
-      if (target <= now) target.setDate(target.getDate() + 1);
-      const diff = Math.floor((target - now) / 1000);
-      const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60);
-      document.getElementById('countdown').textContent = `Sledeći alarm za ${h}h ${m}m`;
-      if (now.getHours() === ah && now.getMinutes() === am && now.getSeconds() === 0) testAlarm();
-    }, 1000);
-
-    document.getElementById('alarmTime').value = state.alarm || '08:00';
-    renderCash(); renderDebts(); renderTxs(); updateSim();
-  </script>
-</body>
-</html>
+      const val = prompt('Unesi ukupan iznos duga prema Coe u RSD 
