@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Marko Finansije" />
+  <link rel="manifest" href="manifest.json" />
+  <title>MARKO // Finansijski Komandni Centar (App v8)</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --card2: #172033;
+      --border: #1f2d47;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --gold: #f59e0b;
+      --emerald: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding: 12px; line-height: 1.45; max-width: 900px; margin: 0 auto; padding-bottom: 40px; }
+    .header { background: linear-gradient(135deg, #111827, #0f172a); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 14px; }
+    .top-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .brand { font-size: 1.05rem; font-weight: 800; letter-spacing: 0.5px; color: var(--gold); }
+    .sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .clock-box { text-align: right; }
+    .clock { font-size: 1.3rem; font-weight: 800; color: var(--emerald); font-variant-numeric: tabular-nums; }
+    .alarm-bar { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+    input, select, textarea { background: #0b1120; border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 9px 11px; font-size: 0.92rem; }
+    .btn { background: var(--gold); color: #090d16; border: none; border-radius: 10px; padding: 9px 13px; font-weight: 700; font-size: 0.84rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn:active { transform: scale(0.97); }
+    .btn-green { background: var(--emerald); color: #052e16; }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-purple { background: var(--purple); color: #fff; }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-ghost { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+    .btn-sm { padding: 6px 10px; font-size: 0.77rem; border-radius: 8px; }
+    .grid-kpi { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    @media (min-width: 640px) { .grid-kpi { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+    .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .kpi-val { font-size: 1.15rem; font-weight: 800; margin-top: 4px; }
+    .section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 14px; }
+    .sec-title { font-size: 0.96rem; font-weight: 800; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .cash-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+    @media (min-width: 640px) { .cash-grid { grid-template-columns: 1fr 1fr; } }
+    .cash-box { background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .cash-big { font-size: 1.35rem; font-weight: 800; margin-top: 4px; }
+    .debt-item { background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+    .debt-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+    .b-crit { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+    .b-high { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); }
+    .b-med { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.4); }
+    .b-pers { background: rgba(168,85,247,0.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.4); }
+    .meta { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .progress-wrap { background: #0b1120; border-radius: 999px; height: 10px; overflow: hidden; margin-top: 8px; border: 1px solid var(--border); }
+    .progress-bar { background: linear-gradient(90deg, var(--gold), var(--emerald)); height: 100%; transition: width 0.3s; }
+    .log-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.84rem; }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--emerald); color: #052e16; font-weight: 800; padding: 11px 18px; border-radius: 999px; display: none; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.65); max-width: 92vw; text-align: center; }
+    .mem-banner { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="header">
+    <div class="top-row">
+      <div>
+        <div class="brand">⚡ MARKO // KOMANDNI CENTAR (APP v8)</div>
+        <div class="sub" id="todayStr">Novi Sad • Samostalna aplikacija sa 3-slojnom bazom podataka</div>
+      </div>
+      <div class="clock-box">
+        <div class="clock" id="clock">00:00:00</div>
+        <div class="sub" id="storageStatus">🟢 Baza: IndexedDB + Local aktivna</div>
+      </div>
+    </div>
+
+    <div class="alarm-bar">
+      <button type="button" class="btn btn-blue btn-sm" onclick="openBackupModal()">💾 Bekap (Kopiraj / Podeli)</button>
+      <button type="button" class="btn btn-purple btn-sm" onclick="openRestoreModal()">📂 Učitaj bekap (Nalepi)</button>
+      <span style="font-size:0.8rem;font-weight:700;margin-left:auto;">⏰</span>
+      <input type="time" id="alarmTime" value="08:00" style="padding:5px 8px;font-size:0.8rem;" />
+      <button type="button" class="btn btn-sm" onclick="saveAlarm()">OK</button>
+    </div>
+
+    <div id="backupModal" style="display:none;margin-top:12px;padding:12px;background:#0b1120;border:1px solid var(--gold);border-radius:12px;">
+      <div style="font-weight:800;font-size:0.88rem;color:var(--gold);margin-bottom:6px;">🔒 Univerzalni Bekap Kod (Radi i kad aplikacija blokira preuzimanje fajlova)</div>
+      <div class="meta" style="margin-bottom:8px;">Klikni na <strong>📋 Kopiraj bekap kod</strong> (ili <strong>📤 Podeli</strong> da ga pošalješ sebi u beleške/Viber). Kad god menjaš aplikaciju, samo ga nalepi u <strong>📂 Učitaj bekap</strong>:</div>
+      <textarea id="backupText" rows="4" style="width:100%;font-family:monospace;font-size:0.75rem;margin-bottom:8px;" readonly></textarea>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button type="button" class="btn btn-green btn-sm" onclick="copyBackupText()">📋 Kopiraj bekap kod</button>
+        <button type="button" class="btn btn-blue btn-sm" onclick="shareBackupText()">📤 Podeli / Pošalji</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="exportBackup()">⬇️ Preuzmi .json fajl</button>
+        <button type="button" class="btn btn-red btn-sm" onclick="document.getElementById('backupModal').style.display='none'">Zatvori</button>
+      </div>
+    </div>
+
+    <div id="restoreModal" style="display:none;margin-top:12px;padding:12px;background:#0b1120;border:1px solid var(--purple);border-radius:12px;">
+      <div style="font-weight:800;font-size:0.88rem;color:var(--purple);margin-bottom:6px;">📂 Vrati podatke iz bekapa</div>
+      <div class="meta" style="margin-bottom:8px;">Nalepi (Paste) kopirani bekap kod u polje ispod ili izaberi .json fajl:</div>
+      <textarea id="restoreText" rows="4" placeholder="Ovde zadrži prst i izaberi Nalepi (Paste)..." style="width:100%;font-family:monospace;font-size:0.75rem;margin-bottom:8px;"></textarea>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button type="button" class="btn btn-green btn-sm" onclick="restoreFromText()">✅ Učitaj iz nalepljenog koda</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+          📁 Izaberi .json fajl
+          <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importBackup(event)" />
+        </label>
+        <button type="button" class="btn btn-red btn-sm" onclick="document.getElementById('restoreModal').style.display='none'">Zatvori</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mem-banner">
+    <span>🔒 <strong>3-Slojna Memorija:</strong> Podaci se automatski čuvaju u internu bazu aplikacije (IndexedDB + Local).</span>
+    <span id="lastSavedBadge" style="color:var(--emerald);font-weight:700;">Sve promene sačuvane</span>
+  </div>
+
+  <div class="section" style="border-color: rgba(16,185,129,0.45);">
+    <div class="sec-title">
+      <span>💵 Dnevno stanje novca (Početak & Kraj dana)</span>
+      <span class="badge b-med" id="dailyDateBadge">Danas</span>
+    </div>
+    <div class="cash-grid">
+      <div class="cash-box">
+        <div class="kpi-label">Početno stanje na početku dana</div>
+        <div class="cash-big" style="color:var(--gold)" id="startCashDisplay">0,00 RSD</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+          <input type="number" id="startCashInput" placeholder="Unesi početno (RSD)" style="flex:1;min-width:130px;" />
+          <button type="button" class="btn" onclick="setStartCash()">Sačuvaj</button>
+        </div>
+        <div class="meta">Keš u novčaniku + raspoloživo na računu ujutru.</div>
+      </div>
+
+      <div class="cash-box">
+        <div class="kpi-label">Stanje na kraju dana (automatski)</div>
+        <div class="cash-big" style="color:var(--emerald)" id="endCashDisplay">0,00 RSD</div>
+        <div class="meta" id="dailyBreakdown">Danas: +0 RSD prihoda | -0 RSD odliva (Neto: 0 RSD)</div>
+        <div class="actions">
+          <button type="button" class="btn btn-blue" onclick="closeDay()">🌙 Završi dan & prenesi za sutra</button>
+        </div>
+      </div>
+    </div>
+    <div id="dayHistoryWrap" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="grid-kpi">
+    <div class="kpi">
+      <div class="kpi-label">Preostali dug</div>
+      <div class="kpi-val" style="color:var(--red)" id="kpiDebt">100.232 RSD</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Otplaćeno</div>
+      <div class="kpi-val" style="color:var(--emerald)" id="kpiPaid">0 RSD</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Novi prihodi</div>
+      <div class="kpi-val" style="color:var(--gold)" id="kpiIncome">0 RSD</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Procena izlaska</div>
+      <div class="kpi-val" style="color:var(--blue)" id="kpiWeeks">~11 ned.</div>
+    </div>
+  </div>
+
+  <div class="section" style="border-color: rgba(245,158,11,0.45);">
+    <div class="sec-title">
+      <span>🧠 Looping Sistem — Dnevne beleške & Strategija</span>
+      <span class="badge b-high" id="loopCountBadge">0 beleški</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <input type="text" id="loopNote" placeholder="Upiši šta si danas uradio, dogovorio ili zaradio..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter') recordLoop()" />
+      <button type="button" class="btn btn-green" onclick="recordLoop()">+ Sačuvaj belešku</button>
+    </div>
+    <div id="loopHistory"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title"><span>💸 Brzi unos prihoda / troška / uplate duga</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <select id="txType">
+        <option value="income">+ Prihod (Hausmajstor / BlaBlaCar / Poljoprivreda)</option>
+        <option value="debt">- Uplata za zatvaranje duga</option>
+        <option value="expense">- Dnevni trošak (gorivo, hrana, materijal)</option>
+      </select>
+      <input type="text" id="txDesc" placeholder="Opis (npr. Uplata Coe 3.000, Montaža TV-a, Gorivo)" style="flex:1;min-width:180px;" />
+      <input type="number" id="txAmt" placeholder="Iznos RSD" style="width:120px;" />
+      <button type="button" class="btn btn-green" onclick="addTx()">Dodaj</button>
+    </div>
+    <div id="txLog" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">
+      <span>🎯 Plan za izlazak iz dugova (Yettel, Creditexpress & Coe)</span>
+      <select id="sortMode" onchange="renderDebts()">
+        <option value="priority">Prioritet / Rok</option>
+        <option value="avalanche">Avalanche (Najviša kamata)</option>
+        <option value="snowball">Snowball (Najmanji dug)</option>
+      </select>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="debtBar" style="width:0%"></div></div>
+    <div style="margin-top:12px;" id="debtList"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title"><span>📈 Simulator izlaska iz duga (Hausmajstor + BlaBlaCar)</span></div>
+    <div class="meta">Dodatna nedeljna zarada (popravke, montaža TV-a, vožnje): <strong style="color:var(--emerald)" id="weeklyVal">10.000 RSD</strong></div>
+    <input type="range" id="weeklySlider" min="3000" max="30000" step="1000" value="10000" style="width:100%;margin:10px 0;" oninput="updateSim()" />
+    <div class="meta" id="simResult">Sa 10.000 RSD nedeljno zatvaraš sve obaveze za 11 nedelja.</div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'marko_cc_master_v7';
+    const LEGACY_KEYS = ['marko_cc_master', 'marko_cc_v6', 'marko_cc_v5', 'marko_cc_v4'];
+    const DB_NAME = 'MarkoFinansijeDB';
+    const STORE_NAME = 'app_state';
+
+    const defaultDebts = [
+      { id: 'ce', name: 'DOO Creditexpress (Yettel d.o.o.) — Predmet 10383328', amount: 67307.70, paid: 0, rate: 18, badge: 'HITNO — PRED SUDSKI POSTUPAK', bClass: 'b-crit', details: 'Račun: 265-1040310000502-07 | Poziv na broj: 43-26720331-2608 | Tel: 011/442-18-22', email: 'naplata@creditexpress.rs' },
+      { id: 'coe', name: 'Coe (Jelena Galić) — Otplata po 3.000 RSD (od 17.11.2026.)', amount: 3000.00, paid: 0, rate: 15, badge: '3.000 RSD / RATA', bClass: 'b-pers', details: 'Početak: 17.11.2026. po 3.000 RSD | Račun: 115-0381638574517-67 (klikni Izmeni ukupno ako ima više rata).', email: '' },
+      { id: 'yb_od', name: 'Yettel Bank — Tekući račun + održavanje', amount: 1195.24, paid: 0, rate: 32, badge: 'KAMATA 26–32%', bClass: 'b-crit', details: 'Dug 600,24 RSD + 595,00 RSD održavanje. Najlakše za odmah zatvoriti.', email: '' },
+      { id: 'yb_cc', name: 'Yettel Bank — Kredit / Kartica (0049032003493)', amount: 12305.00, paid: 0, rate: 22, badge: 'KAŠNJENJE RATE', bClass: 'b-high', details: 'Zaostatak 10.140,47 RSD + dospeće redovne rate 11.763,16 RSD.', email: '' },
+      { id: 'sbb', name: 'SBB | Yettel račun (Oktobar 2026)', amount: 16423.81, paid: 0, rate: 12, badge: 'ROK 25.11.2026.', bClass: 'b-med', details: 'Račun: 170-0030005050008-76 | Poziv na broj: 912011950787 (Tekući 3.076,81 + prethodno 13.347,00 RSD).', email: '' }
+    ];
+
+    const todayStr = new Date().toLocaleDateString('sr-RS');
+
+    function idbOpen() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject('No IndexedDB');
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = function(e) {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = function(e) { resolve(e.target.result); };
+        req.onerror = function(e) { reject(e); };
+      });
+    }
+
+    async function idbSave(data) {
+      try {
+        const db = await idbOpen();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).put(data, 'main');
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = (e) => reject(e);
+        });
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function idbLoad() {
+      try {
+        const db = await idbOpen();
+        return new Promise((resolve) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const req = tx.objectStore(STORE_NAME).get('main');
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function readSyncFallback() {
+      try {
+        const direct = localStorage.getItem(STORAGE_KEY);
+        if (direct) return JSON.parse(direct);
+        for (const k of LEGACY_KEYS) {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.debts)) return parsed;
+          }
+        }
+      } catch (e) {}
+      try {
+        if (window.name && window.name.startsWith('{')) return JSON.parse(window.name);
+      } catch (e) {}
+      return null;
+    }
+
+    let initial = readSyncFallback();
+    let state = {
+      debts: (initial && Array.isArray(initial.debts)) ? initial.debts : JSON.parse(JSON.stringify(defaultDebts)),
+      txs: (initial && Array.isArray(initial.txs)) ? initial.txs : [],
+      alarm: (initial && initial.alarm) ? initial.alarm : '08:00',
+      loops: (initial && Array.isArray(initial.loops)) ? initial.loops : [],
+      startCash: (initial && !isNaN(Number(initial.startCash))) ? Number(initial.startCash) : 0,
+      cashDate: (initial && initial.cashDate) ? initial.cashDate : todayStr,
+      dayHistory: (initial && Array.isArray(initial.dayHistory)) ? initial.dayHistory : [],
+      updatedAt: (initial && initial.updatedAt) ? initial.updatedAt : 0
+    };
+
+    async function save() {
+      state.updatedAt = Date.now();
+      const serialized = JSON.stringify(state);
+      let localOk = false;
+      try {
+        localStorage.setItem(STORAGE_KEY, serialized);
+        localStorage.setItem('marko_cc_master', serialized);
+        localOk = true;
+      } catch (e) {}
+      try {
+        window.name = serialized;
+      } catch (e) {}
+      const idbOk = await idbSave(state);
+      const statusEl = document.getElementById('storageStatus');
+      const badgeEl = document.getElementById('lastSavedBadge');
+      const nowTime = new Date().toTimeString().slice(0, 8);
+      if (statusEl) {
+        statusEl.textContent = (idbOk || localOk) ? '🟢 Baza aktivna (' + nowTime + ')' : '🟡 Koristi Kopiraj bekap kod';
+      }
+      if (badgeEl) {
+        badgeEl.textContent = '✔ Sačuvano u ' + nowTime;
+      }
+    }
+
+    function openBackupModal() {
+      document.getElementById('restoreModal').style.display = 'none';
+      const modal = document.getElementById('backupModal');
+      const txt = document.getElementById('backupText');
+      txt.value = JSON.stringify(state);
+      modal.style.display = 'block';
+    }
+
+    function openRestoreModal() {
+      document.getElementById('backupModal').style.display = 'none';
+      document.getElementById('restoreModal').style.display = 'block';
+    }
+
+    function copyBackupText() {
+      const txt = document.getElementById('backupText');
+      txt.select();
+      txt.setSelectionRange(0, 999999);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt.value).then(() => {
+          toast('📋 Bekap kod je kopiran! Sačuvaj ga u Beleške ili Viber.');
+        }).catch(() => {
+          document.execCommand('copy');
+          toast('📋 Bekap kod je kopiran!');
+        });
+      } else {
+        document.execCommand('copy');
+        toast('📋 Bekap kod je kopiran!');
+      }
+    }
+
+    function shareBackupText() {
+      const dataStr = JSON.stringify(state);
+      if (navigator.share) {
+        navigator.share({
+          title: 'Marko Finansije Bekap (' + todayStr + ')',
+          text: dataStr
+        }).catch(() => {});
+      } else {
+        copyBackupText();
+      }
+    }
+
+    function restoreFromText() {
+      const raw = document.getElementById('restoreText').value.trim();
+      if (!raw) return toast('Prvo nalepi bekap kod u polje!');
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.debts)) {
+          state = parsed;
+          save(); renderCash(); renderDebts(); renderTxs(); renderLoops(); updateSim();
+          document.getElementById('restoreModal').style.display = 'none';
+          document.getElementById('restoreText').value = '';
+          toast('✅ Svi podaci su uspešno vraćeni iz koda!');
+        } else {
+          toast('Kod nije ispravan.');
+        }
+      } catch (e) {
+        toast('Greška: Kod nije kompletno kopiran.');
+      }
+    }
+
+    function exportBackup() {
+      const dataStr = JSON.stringify(state, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+      const a = document.createElement('a');
+      a.href = dataUri;
+      a.download = 'Marko_Finansije_Bekap_' + todayStr.replace(/\./g, '-') + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast('💾 Ako aplikacija blokira fajl, klikni na zeleno dugme Kopiraj bekap kod!');
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    function getTodayStats() {
+      const todayTxs = state.txs.filter(t => t.date === todayStr);
+      const inToday = todayTxs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amt || 0), 0);
+      const outToday = todayTxs.filter(t => t.type !== 'income').reduce((s, t) => s + Number(t.amt || 0), 0);
+      const start = Number(state.startCash) || 0;
+      const end = start + inToday - outToday;
+      return { start, inToday, outToday, end, diff: inToday - outToday };
+    }
+
+    function renderCash() {
+      document.getElementById('dailyDateBadge').textContent = todayStr;
+      const st = getTodayStats();
+      document.getElementById('startCashDisplay').textContent = st.start.toLocaleString('sr-RS', {minimumFractionDigits:2}) + ' RSD';
+      const endEl = document.getElementById('endCashDisplay');
+      endEl.textContent = st.end.toLocaleString('sr-RS', {minimumFractionDigits:2}) + ' RSD';
+      endEl.style.color = st.end < 0 ? 'var(--red)' : 'var(--emerald)';
+      const sign = st.diff >= 0 ? '+' : '';
+      document.getElementById('dailyBreakdown').textContent =
+        `Danas: +${st.inToday.toLocaleString('sr-RS')} RSD prihoda | -${st.outToday.toLocaleString('sr-RS')} RSD odliva (Neto: ${sign}${st.diff.toLocaleString('sr-RS')} RSD)`;
+
+      const histEl = document.getElementById('dayHistoryWrap');
+      if (state.dayHistory && state.dayHistory.length > 0) {
+        histEl.innerHTML = '<div class="meta" style="margin-bottom:4px;font-weight:700;">Arhiva prethodnih dana:</div>' +
+          state.dayHistory.slice(0, 5).map(h => `
+            <div class="log-row">
+              <span>${h.date} (Početak: ${Number(h.start).toLocaleString('sr-RS')} RSD)</span>
+              <strong style="color:var(--emerald)">Kraj: ${Number(h.end).toLocaleString('sr-RS')} RSD</strong>
+            </div>`).join('');
+      } else {
+        histEl.innerHTML = '';
+      }
+    }
+
+    function setStartCash() {
+      const raw = document.getElementById('startCashInput').value.replace(',', '.');
+      const val = parseFloat(raw);
+      if (isNaN(val)) return toast('Unesi početno stanje u RSD');
+      state.startCash = val;
+      state.cashDate = todayStr;
+      document.getElementById('startCashInput').value = '';
+      save();
+      renderCash();
+      toast('✅ Početno stanje sačuvano: ' + val.toLocaleString('sr-RS') + ' RSD');
+    }
+
+    function closeDay() {
+      const st = getTodayStats();
+      state.dayHistory = state.dayHistory || [];
+      state.dayHistory.unshift({ date: todayStr, start: st.start, end: st.end });
+      state.startCash = st.end;
+      save();
+      renderCash();
+      toast('🌙 Dan završen! Krajnje stanje preneto za sutra.');
+    }
+
+    function renderDebts() {
+      const mode = document.getElementById('sortMode').value;
+      let list = [...state.debts];
+      if (mode === 'avalanche') list.sort((a,b) => b.rate - a.rate);
+      if (mode === 'snowball') list.sort((a,b) => (a.amount - a.paid) - (b.amount - b.paid));
+
+      const el = document.getElementById('debtList');
+      el.innerHTML = list.map(d => {
+        const rem = Math.max(0, Number(d.amount) - Number(d.paid));
+        const mailHref = d.email ? `mailto:${d.email}?subject=${encodeURIComponent('Predlog sporazuma o otplati duga na rate - Predmet 10383328 (Marko Stakić)')}&body=${encodeURIComponent('Poštovani,\n\nObraćam Vam se povodom opomene za predmet broj 10383328 (nalogodavac: Yettel d.o.o., iznos: 67.307,70 RSD). Molim Vas za odobrenje sporazuma o otplati duga na 4 mesečne rate.\n\nKontakt telefon: 060/1612306\n\nSrdačan pozdrav,\nMarko Stakić')}` : '';
+        return `
+          <div class="debt-item">
+            <div class="debt-head">
+              <div>
+                <div style="font-weight:700;font-size:0.92rem;">${d.name}</div>
+                <div class="meta">${d.details}</div>
+              </div>
+              <span class="badge ${d.bClass}">${d.badge}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;">
+              <div style="font-weight:800;font-size:1rem;color:${rem === 0 ? 'var(--emerald)' : 'var(--text)'}">
+                ${rem === 0 ? '✅ IZMIRENO' : rem.toLocaleString('sr-RS', {minimumFractionDigits:2}) + ' RSD'}
+              </div>
+              <div class="actions">
+                ${d.id === 'ce' ? `<a class="btn btn-red btn-sm" href="tel:0114421822">📞 Pozovi</a><a class="btn btn-sm" href="${mailHref}">✉ Mejl</a>` : ''}
+                ${d.id === 'coe' ? `<button type="button" class="btn btn-purple btn-sm" onclick="editCoeTotal()">✏️ Izmeni ukupno</button>` : ''}
+                ${d.id === 'coe' && rem > 0 ? `<button type="button" class="btn btn-green btn-sm" onclick="payDebt('coe', 3000)">-3.000 RSD (Rata)</button>` : ''}
+                ${rem > 0 && d.id !== 'coe' ? `<button type="button" class="btn btn-green btn-sm" onclick="payDebt('${d.id}', 1000)">-1.000 RSD</button>` : ''}
+                ${rem > 0 ? `<button type="button" class="btn btn-ghost btn-sm" onclick="payDebt('${d.id}', ${rem})">Zatvori sve</button>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+      updateKPIs();
+    }
+
+    function editCoeTotal() {
+      const d = state.debts.find(x => x.id === 'coe');
+      if (!d) return;
+      const val = prompt('Unesi ukupan iznos duga prema Coe u RSD (npr. 15000 za 5 rata po 3.000 RSD):', d.amount);
+      if (val !== null) {
+        const parsed = parseFloat(val.replace(',', '.'));
+        if (!isNaN(parsed) && parsed > 0) {
+          d.amount = parsed;
+          save(); renderDebts(); updateSim();
+          toast('✅ Ukupan dug za Coe ažuriran na ' + d.amount.toLocaleString('sr-RS') + ' RSD');
+        }
+      }
+    }
+
+    function payDebt(id, amt) {
+      const d = state.debts.find(x => x.id === id);
+      if (!d) return;
+      const actual = Math.min(Number(d.amount) - Number(d.paid), Number(amt));
+      if (actual <= 0) return;
+      d.paid = Number(d.paid) + actual;
+      state.txs.unshift({ type: 'debt', debtId: id, desc: 'Uplata: ' + d.name.split('—')[0].trim(), amt: actual, date: todayStr });
+      save(); renderDebts(); renderTxs(); renderCash(); updateSim();
+      toast('✅ Uplata sačuvana: ' + actual.toLocaleString('sr-RS') + ' RSD');
+    }
+
+    function addTx() {
+      const type = document.getElementById('txType').value;
+      const desc = document.getElementById('txDesc').value.trim() || (type === 'income' ? 'Dodatni prihod' : (type === 'debt' ? 'Uplata duga' : 'Dnevni trošak'));
+      const rawAmt = document.getElementById('txAmt').value.replace(',', '.');
+      const amt = parseFloat(rawAmt);
+      if (isNaN(amt) || amt <= 0) return toast('Unesi ispravan iznos u RSD');
+      state.txs.unshift({ type, desc, amt, date: todayStr });
+      document.getElementById('txDesc').value = '';
+      document.getElementById('txAmt').value = '';
+      save(); renderTxs(); renderCash(); updateKPIs();
+      toast('✅ Transakcija sačuvana u bazu!');
+    }
+
+    function deleteTx(idx) {
+      const t = state.txs[idx];
+      if (!t) return;
+      if (t.debtId) {
+        const d = state.debts.find(x => x.id === t.debtId);
+        if (d) d.paid = Math.max(0, Number(d.paid) - Number(t.amt));
+      }
+      state.txs.splice(idx, 1);
+      save(); renderDebts(); renderTxs(); renderCash(); updateSim();
+      toast('Stavka obrisana.');
+    }
+
+    function renderTxs() {
+      const el = document.getElementById('txLog');
+      el.innerHTML = state.txs.slice(0, 15).map((t, idx) => {
+        const color = t.type === 'income' ? 'var(--emerald)' : (t.type === 'debt' ? 'var(--gold)' : 'var(--red)');
+        const sign = t.type === 'income' ? '+' : '-';
+        return `
+        <div class="log-row">
+          <span>${t.date} • ${t.desc}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <strong style="color:${color}">${sign}${Number(t.amt).toLocaleString('sr-RS')} RSD</strong>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="deleteTx(${idx})">✕</button>
+          </div>
+        </div>`;
+      }).join('') || '<div class="meta">Još nema unetih transakcija danas.</div>';
+    }
+
+    function updateKPIs() {
+      const total = state.debts.reduce((s, d) => s + Number(d.amount || 0), 0);
+      const paid = state.debts.reduce((s, d) => s + Number(d.paid || 0), 0);
+      const rem = Math.max(0, total - paid);
+      const inc = state.txs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amt || 0), 0);
+      document.getElementById('kpiDebt').textContent = Math.round(rem).toLocaleString('sr-RS') + ' RSD';
+      document.getElementById('kpiPaid').textContent = Math.round(paid).toLocaleString('sr-RS') + ' RSD';
+      document.getElementById('kpiIncome').textContent = Math.round(inc).toLocaleString('sr-RS') + ' RSD';
+      const pct = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
+      document.getElementById('debtBar').style.width = pct.toFixed(1) + '%';
+    }
+
+    function updateSim() {
+      const w = parseInt(document.getElementById('weeklySlider').value, 10);
+      document.getElementById('weeklyVal').textContent = w.toLocaleString('sr-RS') + ' RSD';
+      const total = state.debts.reduce((s, d) => s + Number(d.amount || 0), 0);
+      const paid = state.debts.reduce((s, d) => s + Number(d.paid || 0), 0);
+      const rem = Math.max(0, total - paid);
+      const wks = rem === 0 ? 0 : Math.ceil(rem / w);
+      document.getElementById('kpiWeeks').textContent = wks === 0 ? '0 ned.' : `~${wks} ned.`;
+      document.getElementById('simResult').textContent = wks === 0
+        ? 'Svi dugovi su zatvoreni! Svaki sledeći dinar ide direktno u štednju.'
+        : `Sa ${w.toLocaleString('sr-RS')} RSD nedeljno zatvaraš preostalih ${Math.round(rem).toLocaleString('sr-RS')} RSD za ${wks} nedelja.`;
+    }
+
+    function recordLoop() {
+      const input = document.getElementById('loopNote');
+      const note = input.value.trim();
+      if (!note) return toast('Upiši belešku u polje pre čuvanja');
+      state.loops = Array.isArray(state.loops) ? state.loops : [];
+      state.loops.unshift({ note, time: new Date().toLocaleString('sr-RS') });
+      input.value = '';
+      save();
+      renderLoops();
+      toast('✅ Beleška trajno sačuvana u bazu!');
+    }
+
+    function deleteLoop(idx) {
+      state.loops.splice(idx, 1);
+      save();
+      renderLoops();
+      toast('Beleška obrisana.');
+    }
+
+    function renderLoops() {
+      const el = document.getElementById('loopHistory');
+      const countEl = document.getElementById('loopCountBadge');
+      state.loops = Array.isArray(state.loops) ? state.loops : [];
+      if (countEl) countEl.textContent = state.loops.length + ' beleški';
+      const defaultHtml = `
+        <div class="meta" style="color:var(--text);margin-bottom:8px;padding:8px;background:var(--card2);border-radius:10px;border:1px solid var(--border);">
+          <strong>📌 Današnji fokus:</strong><br>
+          1. Pozovi Creditexpress (011/442-18-22) za predmet 10383328 i pošalji zahtev za 4 rate.<br>
+          2. Otplata duga Coe (Jelena Galić) po 3.000 RSD (račun: 115-0381638574517-67).<br>
+          3. Uplati 1.200 RSD na Yettel Bank tekući račun da prekineš kamatu od 26–32%.<br>
+          4. Obnovi KP oglas „HAUSMAJSTOR – Sve kućne popravke”.
+        </div>`;
+      if (state.loops.length === 0) {
+        el.innerHTML = defaultHtml;
+        return;
+      }
+      el.innerHTML = state.loops.map((l, idx) => `
+        <div style="background:var(--card2);border:1px solid var(--emerald);border-radius:10px;padding:9px 11px;margin-bottom:7px;font-size:0.86rem;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span><strong style="color:var(--emerald);">✔ ${l.time}:</strong> ${l.note}</span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="deleteLoop(${idx})">✕</button>
+        </div>`).join('') + defaultHtml;
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && Array.isArray(parsed.debts)) {
+            state = parsed;
+            save(); renderCash(); renderDebts(); renderTxs(); renderLoops(); updateSim();
+            document.getElementById('restoreModal').style.display = 'none';
+            toast('✅ Podaci uspešno učitani iz bekapa!');
+          } else {
+            toast('Neispravan bekap fajl.');
+          }
+        } catch(err) {
+          toast('Greška pri učitavanju fajla.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function saveAlarm() {
+      state.alarm = document.getElementById('alarmTime').value;
+      save();
+      toast('⏰ Alarm sačuvan: ' + state.alarm);
+    }
+
+    setInterval(() => {
+      const now = new Date();
+      const clockEl = document.getElementById('clock');
+      if (clockEl) clockEl.textContent = now.toTimeString().slice(0,8);
+    }, 1000);
+
+    (async function initApp() {
+      const idbData = await idbLoad();
+      if (idbData && Array.isArray(idbData.debts)) {
+        if (!state.updatedAt || (idbData.updatedAt && idbData.updatedAt >= state.updatedAt)) {
+          state = idbData;
+        }
+      }
+      if (!state.debts.find(d => d.id === 'coe')) {
+        state.debts.splice(1, 0, JSON.parse(JSON.stringify(defaultDebts[1])));
+      }
+      document.getElementById('alarmTime').value = state.alarm || '08:00';
+      renderCash();
+      renderDebts();
+      renderTxs();
+      renderLoops();
+      updateSim();
+      await save();
+    })();
+  </script>
+</body>
+</html>
